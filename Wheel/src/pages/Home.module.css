@@ -1,0 +1,113 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.page {
+  width: 100vw;
+  height: 100vh;
+  background: #000 url(../shared/assets/images/bg.jpg) no-repeat top center;
+  background-size: 1920px auto;
+}
+
+.bgImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* или contain */
+  object-position: center;
+  z-index: -1;
+}
+.wrapper {
+  width: 100%;
+  padding: 31px clamp(20px, 10vw, 190px) 0;
+  display: flex;
+  flex-direction: row;
+}
+
+.header {
+  width: 100%;
+  align-items: center;
+}
+.buttonJoin {
+  /* Базовые размеры по ТЗ */
+  width: 188px;
+  height: 47px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1.25rem;
+  text-transform: uppercase;
+  /* Округлая форма (pill-shape) */
+  border-radius: 9999px;
+
+  /* Твой цвет бордера */
+  border: 1px solid #d9b26d;
+
+  /* Точный градиент фона из Figma */
+  background: linear-gradient(80deg, #bd8a31 0%, #f9e99c 40%, #bd8a31 100%);
+
+  /* Текст: по ТЗ должен быть премиальным */
+  color: #4e2e00;
+  font-size: 14px;
+  font-family: Roboto;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 21.7px;
+  word-wrap: break-word;
+
+  /* Плавность по ТЗ */
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(189, 138, 49, 0.3); /* Легкое свечение [cite: 63] */
+}
+
+.buttonJoin:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(217, 178, 109, 0.5);
+}
+
+.buttonJoin:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(189, 138, 49, 0.6);
+}
+
+.buttonLogin {
+  width: 188px;
+  height: 47px;
+  background: transparent;
+  border: 1px solid #d9b26d;
+  border-radius: 9999px;
+
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.buttonLogin:hover {
+  background: rgba(217, 178, 109, 0.1);
+  box-shadow: 0 0 15px rgba(217, 178, 109, 0.2);
+}
+
+.buttonLogin:hover {
+  background: rgba(197, 164, 126, 0.1);
+  box-shadow: 0 0 15px rgba(197, 164, 126, 0.4);
+}
+.Btnwrapper {
+  display: flex;
+  gap: 20px;
+  flex-direction: row;
+  padding-top: 22px;
+}
