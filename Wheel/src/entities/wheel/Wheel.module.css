@@ -1,0 +1,205 @@
+.wrapper {
+  position: relative;
+  width: min(90vw, 757px);
+  aspect-ratio: 1 / 1;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translateY(clamp(20px, 5vw, 80px));
+  z-index: 200;
+}
+
+/* ================= GLOW ================= */
+.glow {
+  position: absolute;
+  width: 115%;
+  height: 115%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(20px);
+  opacity: 0.9;
+}
+
+/* ================= SEGMENTS ================= */
+.segments {
+  position: absolute;
+  width: 97%;
+  height: 97%;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.segments text {
+  font-family: 'Bebas Neue', sans-serif;
+  text-transform: uppercase;
+  font-size: clamp(16px, 4vw, 3rem);
+  fill: white;
+  stroke: #000;
+  stroke-width: 1px;
+  paint-order: stroke;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.segments path {
+  transition: filter 0.3s ease;
+  animation: metalShimmer 4s infinite alternate;
+}
+
+.segments path:hover {
+  filter: brightness(1.2);
+}
+
+/* ================= RIM ================= */
+.rim {
+  position: absolute;
+  width: 96.5%;
+  height: 96.5%;
+  pointer-events: none;
+}
+
+/* ================= BUTTON ================= */
+.buttonContainer {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  min-width: 60px;
+  min-height: 60px;
+}
+
+.buttonContainer:active {
+  transform: scale(0.95);
+}
+
+.button {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ================= POINTER ================= */
+.pointer {
+  position: absolute;
+  width: 34%;
+  top: -9%;
+  left: 50%;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  z-index: 300;
+}
+
+/* ================= ANIMATIONS ================= */
+@keyframes metalShimmer {
+  0% {
+    filter: brightness(1) contrast(1);
+  }
+  50% {
+    filter: brightness(1.2) contrast(1.1);
+  }
+  100% {
+    filter: brightness(0.95) contrast(0.95);
+  }
+}
+
+/* ================= MOBILE С КРУПНЫМИ ЦИФРАМИ ================= */
+
+@media (max-width: 760px) {
+  .wrapper {
+    width: 95vw;
+    transform: translateY(40px);
+  }
+
+  .segments text {
+    font-size: clamp(24px, 6vw, 3.5rem) !important;
+    stroke-width: 1.5px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+  }
+
+  .segments {
+    width: 96%;
+    height: 96%;
+  }
+}
+
+@media (max-width: 600px) {
+  .segments text {
+    font-size: clamp(26px, 7vw, 3rem) !important;
+    stroke-width: 2px;
+  }
+
+  .pointer {
+    width: 38%;
+    top: -8%;
+  }
+}
+
+@media (max-width: 480px) {
+  .wrapper {
+    width: 98vw;
+    transform: translateY(15px);
+  }
+
+  /* МАКСИМАЛЬНО КРУПНЫЕ ЦИФРЫ */
+  .segments text {
+    font-size: clamp(28px, 8vw, 3.2rem) !important;
+    stroke-width: 2.5px;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+    font-weight: bold;
+    paint-order: stroke fill;
+    fill: #ffffff;
+    stroke: #000000;
+    letter-spacing: 1px;
+  }
+
+  .pointer {
+    width: 38%;
+    top: -8%;
+  }
+
+  .buttonContainer {
+    width: 55%;
+    height: 55%;
+    min-width: 50px;
+    min-height: 50px;
+  }
+
+  .segments {
+    width: 95%;
+    height: 95%;
+  }
+
+  .segments path {
+    stroke-width: 2px;
+    stroke: rgba(255, 255, 255, 0.3);
+  }
+}
+
+@media (max-width: 375px) {
+  .segments text {
+    font-size: clamp(26px, 9vw, 2.8rem) !important;
+    stroke-width: 3px;
+  }
+}
+
+@media (max-width: 320px) {
+  .segments text {
+    font-size: 24px !important;
+    stroke-width: 3px;
+  }
+
+  .segments {
+    width: 94%;
+    height: 94%;
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .segments text {
+    stroke-width: 2px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  }
+}
