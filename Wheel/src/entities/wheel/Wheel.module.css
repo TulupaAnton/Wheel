@@ -8,6 +8,7 @@
   align-items: center;
   transform: translateY(clamp(20px, 5vw, 80px));
   z-index: 200;
+  margin-bottom: 80px;
 }
 
 /* ================= GLOW ================= */

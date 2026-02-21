@@ -21,8 +21,9 @@ body::-webkit-scrollbar {
   min-height: 100vh;
   background: #000 url(../shared/assets/images/bg.jpg) no-repeat top center;
   background-size: cover;
+
   overflow-x: hidden;
-  overflow-y: visible;
+  overflow-y: hidden;
 }
 
 .topLight {
@@ -37,6 +38,27 @@ body::-webkit-scrollbar {
   background-size: contain;
   pointer-events: none;
   z-index: 1;
+}
+.burgerBtn {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.burgerBtn span {
+  width: 30px;
+  height: 3px;
+  background: #d9b26d;
+  display: block;
+  transition: 0.3s;
+}
+
+.navMenu {
+  display: none;
 }
 .mainContent {
   position: relative;
@@ -91,7 +113,7 @@ body::-webkit-scrollbar {
 }
 
 .navMenu {
-  display: flex;
+  /* display: flex; */
   gap: 20px;
 }
 
@@ -245,7 +267,7 @@ body::-webkit-scrollbar {
 }
 .king {
   top: 2%;
-  right: 0.5%;
+  right: 0.2%;
   width: 560px;
 }
 
@@ -259,14 +281,14 @@ body::-webkit-scrollbar {
 .ace {
   /* bottom: %; */
   top: 66.2%;
-  left: 0.5%;
+  /* left: %; */
   width: 458px;
   transform: rotate(-1deg);
 }
 
 .chip {
   top: 36%;
-  left: 5.2%;
+  left: 2%;
   width: 480px;
   transform: rotate(-1deg);
 }
@@ -330,9 +352,143 @@ body::-webkit-scrollbar {
 }
 /* === MOBILE ADAPTATION === */
 @media (max-width: 760px) {
-  .burgerBtn {
-    display: flex;
+  /* базовая сцена */
+  .page {
+    min-height: 100vh;
+    overflow-x: hidden;
   }
+
+  /* верхняя шапка */
+  .wrapper {
+    max-width: 100%;
+    padding: 14px 16px 0; /* компактно как на скрине */
+  }
+
+  .header {
+    align-items: center;
+  }
+
+  .header img {
+    height: 42px; /* подгони если нужно */
+    width: auto;
+  }
+
+  .burgerBtn {
+    display: flex; /* бургер видим */
+  }
+
+  /* десктопные кнопки скрываем */
+  .BtnwrapperDesktop {
+    display: none;
+  }
+
+  /* меню */
+  .navMenu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 260px;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 18px;
+    transition: 0.35s;
+    z-index: 9999;
+    border-left: 1px solid #d9b26d;
+  }
+
+  .navMenuActive {
+    right: 0;
+  }
+
+  .menuClose {
+    align-self: flex-end;
+    font-size: 34px;
+    line-height: 1;
+    background: transparent;
+    border: none;
+    color: #d9b26d;
+    cursor: pointer;
+  }
+
+  .mobileButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .sectionP {
+    width: calc(100% - 24px);
+    max-width: 520px;
+    margin: 14px auto 0;
+    padding: clamp(12px, 4vw, 16px) clamp(10px, 3.5vw, 14px);
+    border-radius: clamp(20px, 5vw, 26px);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .sectionP::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+      url('../shared/assets/images/border.png') no-repeat center;
+    background-size: 100% 100%; /* ✅ фон растягивается пропорционально блоку */
+    border-radius: inherit; /* ✅ наследует радиус родителя */
+    z-index: -1;
+    pointer-events: none;
+    filter: drop-shadow(0 0 18px rgba(255, 200, 80, 0.35));
+  }
+
+  .title1 {
+    font-size: clamp(12px, 3.5vw, 14px); /* ✅ адаптивный размер */
+    line-height: 1.15;
+    margin: 0 0 clamp(4px, 1.5vw, 6px);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+  .titleSpan {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .title2 {
+    font-size: 18px;
+    line-height: 1.15;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .queen,
+  .chip {
+    display: none;
+  }
+  .ace {
+    top: 0;
+    top: 85%;
+    width: 220px;
+  }
+
+  .chip2 {
+    width: 170px;
+    top: 78%;
+    right: 2%;
+    opacity: 0.95;
+  }
+
+  .decorLight {
+    opacity: 0.55;
+    filter: blur(0.6px);
+    z-index: 1;
+  }
+
+  /* скрываем боковые лишние, оставляем верх/акценты */
   .Light1,
   .Light2,
   .Light3,
@@ -344,93 +500,68 @@ body::-webkit-scrollbar {
     display: none;
   }
 
+  .LightTop {
+    display: block;
+    position: absolute;
+    top: -2%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120%;
+    max-width: 520px;
+    opacity: 0.65;
+  }
+
+  .LightTop2 {
+    display: block;
+    position: absolute;
+    top: -1%;
+    left: 18%;
+    width: 85%;
+    max-width: 420px;
+    opacity: 0.45;
+  }
+  .Btnwrapper {
+    display: none; /* прячем десктопные кнопки */
+  }
+
+  .burgerBtn {
+    display: flex;
+  }
+
   .navMenu {
+    display: flex;
     position: fixed;
     top: 0;
     right: -100%;
-    width: 250px;
-    height: 50vh;
-    background: rgba(0, 0, 0, 0.95);
+    width: 260px;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.92);
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    transition: 0.4s;
-    z-index: 200;
+    gap: 18px;
+    padding: 18px;
+    transition: 0.35s;
+    z-index: 9999;
     border-left: 1px solid #d9b26d;
-    border-bottom: 1px solid #d9b26d;
-    border-radius: 2%;
   }
 
-  .navMenu.active {
+  .navMenuActive {
     right: 0;
   }
 
-  .Btnwrapper {
-    flex-direction: column;
-    padding-top: 0;
-  }
-  .title1 {
-    font-size: 16px;
-    font-weight: 400;
-  }
-  .title2 {
-    font-size: 21px;
-  }
-  .titleSpan {
-    font-size: 16px;
-  }
-  .sectionP {
-    position: relative;
-    margin: 20px 15px;
-    padding: 25px 20px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 50px;
-    color: #fff;
-    z-index: 1;
+  .menuClose {
+    align-self: flex-end;
+    font-size: 34px;
+    line-height: 1;
+    background: transparent;
     border: none;
-    box-sizing: border-box;
-    word-wrap: break-word;
+    color: #d9b26d;
+    cursor: pointer;
   }
 
-  .sectionP::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-      url('../shared/assets/images/border.svg') no-repeat center center;
-    background-size: cover;
-    z-index: -1;
-    pointer-events: none;
-  }
-  .king,
-  .queen,
-  .ace,
-  .chip,
-  .chip2 {
-    display: block;
-    width: clamp(80px, 20vw, 150px);
-    filter: blur(1px);
-    opacity: 0.6;
-  }
-
-  .king {
-    top: 5%;
-    right: -10%;
-  }
-  .queen {
-    top: 40%;
-    left: -10%;
-  }
-  .ace {
-    top: 80%;
-    left: 0;
-  }
-  .chip {
-    display: none;
+  .mobileButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 }
 @media (max-width: 768px) {
@@ -438,6 +569,10 @@ body::-webkit-scrollbar {
   .queen,
   .ace,
   .chip {
-    width: 110px;
+    width: 120px;
+  }
+  .king,
+  .queen {
+    display: none;
   }
 }

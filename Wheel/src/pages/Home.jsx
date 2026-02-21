@@ -22,11 +22,14 @@ import LightTop2 from '../shared/assets/images/Lights/LightTop2.svg'
 export function Home () {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [winValue, setWinValue] = useState(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleSpinComplete = prize => {
     setWinValue(prize)
     setIsModalOpen(true)
   }
+
+  const closeMenu = () => setIsMenuOpen(false)
 
   return (
     <div className={styles.page}>
@@ -36,10 +39,63 @@ export function Home () {
         <div className={styles.wrapper}>
           <header className={styles.header}>
             <img src={logo} alt='Logo' />
+
+            {/* BURGER (виден только на мобилке через CSS) */}
+            <button
+              className={styles.burgerBtn}
+              type='button'
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMenuOpen}
+              onClick={() => setIsMenuOpen(v => !v)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+
+            {/* MOBILE MENU */}
+            <nav
+              className={`${styles.navMenu} ${
+                isMenuOpen ? styles.navMenuActive : ''
+              }`}
+            >
+              <button
+                className={styles.menuClose}
+                type='button'
+                aria-label='Close menu'
+                onClick={closeMenu}
+              >
+                ×
+              </button>
+
+              <div className={styles.mobileButtons}>
+                <button
+                  className={styles.buttonLogin}
+                  type='button'
+                  onClick={closeMenu}
+                >
+                  LOGIN
+                </button>
+
+                <button
+                  className={styles.buttonJoin}
+                  type='button'
+                  onClick={closeMenu}
+                >
+                  JOIN
+                </button>
+              </div>
+            </nav>
           </header>
+
+          {/* DESKTOP BUTTONS (на мобилке скрываем через CSS) */}
           <div className={styles.Btnwrapper}>
-            <button className={styles.buttonLogin}>LOGIN</button>
-            <button className={styles.buttonJoin}>JOIN</button>
+            <button className={styles.buttonLogin} type='button'>
+              LOGIN
+            </button>
+            <button className={styles.buttonJoin} type='button'>
+              JOIN
+            </button>
           </div>
         </div>
 
@@ -59,9 +115,11 @@ export function Home () {
       <img src={chip} className={`${styles.decor} ${styles.chip}`} alt='' />
       <img src={ace} className={`${styles.decor} ${styles.ace}`} alt='' />
       <img src={chip2} className={`${styles.decor} ${styles.chip2}`} alt='' />
+
+      {/* FIX: Light1 должен иметь styles.Light1, а не chip2 */}
       <img
         src={Light1}
-        className={`${styles.decorLight} ${styles.chip2}`}
+        className={`${styles.decorLight} ${styles.Light1}`}
         alt=''
       />
       <img
