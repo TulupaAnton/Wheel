@@ -40,7 +40,6 @@ export function Home () {
           <header className={styles.header}>
             <img src={logo} alt='Logo' />
 
-            {/* BURGER (виден только на мобилке через CSS) */}
             <button
               className={styles.burgerBtn}
               type='button'
@@ -53,7 +52,6 @@ export function Home () {
               <span />
             </button>
 
-            {/* MOBILE MENU */}
             <nav
               className={`${styles.navMenu} ${
                 isMenuOpen ? styles.navMenuActive : ''

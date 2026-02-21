@@ -1,9 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useMemo } from 'react'
 import { SECTORS, getColor } from './Wheel.config'
 import { getTargetRotation } from './Wheel.logic'
 import { spinWheel } from './Wheel.animation'
 import { requestSpinResult } from '../../services/api'
-import { gsap } from 'gsap'
+
 import styles from './Wheel.module.css'
 
 import bgWheel from '../../shared/assets/images/bgWheel.png'
@@ -18,7 +18,7 @@ const OUTER_RADIUS = 350
 const INNER_RADIUS = 155
 
 export function Wheel ({ onSpinComplete }) {
-  const sectorsRef = useRef(null)
+  const wheelRef = useRef(null)
   const currentRotation = useRef(0)
 
   const [spinning, setSpinning] = useState(false)
@@ -27,21 +27,24 @@ export function Wheel ({ onSpinComplete }) {
   const totalSectors = SECTORS.length
   const angleStep = 360 / totalSectors
 
-  useEffect(() => {
-    if (!sectorsRef.current) return
+  const segmentFillId = useMemo(() => {
+    return {
+      red: 'segRedMetal',
+      black: 'segBlackMetal',
+      green: 'segGreenMetal'
+    }
+  }, [])
 
+  useEffect(() => {
     const initialOffset = -angleStep / 2
 
-    gsap.set(sectorsRef.current, {
-      rotation: initialOffset,
-      transformOrigin: '50% 50%'
-    })
+    if (!wheelRef.current) return
+
+    wheelRef.current.style.transform = `rotate(${initialOffset}deg)`
+    wheelRef.current.style.willChange = 'transform'
 
     currentRotation.current = initialOffset
   }, [angleStep])
-
-  // ---------------- SPIN ----------------
-
   const handleSpinClick = async () => {
     if (spinning || hasSpun) return
 
@@ -52,28 +55,25 @@ export function Wheel ({ onSpinComplete }) {
       const response = await requestSpinResult()
       const winnerIndex = response.winnerIndex
 
-      const rotation = getTargetRotation(
+      const { targetRotation, fullSpins } = getTargetRotation(
         winnerIndex,
         totalSectors,
         currentRotation.current
       )
 
-      spinWheel(sectorsRef, rotation, () => {
-        currentRotation.current = rotation % 360
+      spinWheel(wheelRef, targetRotation, { fullSpins }, () => {
+        // Важно: сохраняем абсолютный угол (GSAP работает в абсолютных градусах)
+        currentRotation.current = targetRotation
         setSpinning(false)
 
         const prize = SECTORS[winnerIndex]
-        if (onSpinComplete) {
-          onSpinComplete(prize)
-        }
+        if (onSpinComplete) onSpinComplete(prize)
       })
     } catch (error) {
       console.error(error)
       setSpinning(false)
     }
   }
-
-  // ---------------- SVG ----------------
 
   const createSegmentPath = i => {
     const startAngle = i * angleStep - 90
@@ -112,152 +112,48 @@ export function Wheel ({ onSpinComplete }) {
   }
 
   const getMetalGradient = (color, i) => {
-    return `url(#metalGradient-${i})`
+    const baseColor = getColor(color, i)
+
+    if (baseColor.toLowerCase() === '#c62828')
+      return `url(#${segmentFillId.red})`
+    if (baseColor.toLowerCase() === '#111111')
+      return `url(#${segmentFillId.black})`
+
+    return `url(#${segmentFillId.green})`
   }
 
   return (
     <div className={styles.wrapper}>
       <img src={bgWheel} className={styles.glow} alt='' />
 
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className={styles.segments}>
-        <defs>
-          <linearGradient id='goldDivider' x1='0%' y1='0%' x2='100%' y2='0%'>
-            <stop offset='0%' stopColor='#B8860B'>
-              <animate
-                attributeName='stopColor'
-                values='#B8860B;#FFD700;#B8860B'
-                dur='3s'
-                repeatCount='indefinite'
-              />
-            </stop>
-            <stop offset='50%' stopColor='#FFD700'>
-              <animate
-                attributeName='stopColor'
-                values='#FFD700;#FDB931;#FFD700'
-                dur='3s'
-                repeatCount='indefinite'
-              />
-            </stop>
-            <stop offset='100%' stopColor='#B8860B'>
-              <animate
-                attributeName='stopColor'
-                values='#B8860B;#FFD700;#B8860B'
-                dur='3s'
-                repeatCount='indefinite'
-              />
-            </stop>
-          </linearGradient>
+      <div className={styles.wheel} ref={wheelRef}>
+        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className={styles.segments}>
+          <defs>
+            <linearGradient id='goldDivider' x1='0%' y1='0%' x2='100%' y2='0%'>
+              <stop offset='0%' stopColor='#B8860B' />
+              <stop offset='50%' stopColor='#FFD700' />
+              <stop offset='100%' stopColor='#B8860B' />
+            </linearGradient>
 
-          <filter id='metalShine' x='-20%' y='-20%' width='140%' height='140%'>
-            <feGaussianBlur in='SourceAlpha' stdDeviation='2' result='blur' />
-            <feSpecularLighting
-              in='blur'
-              surfaceScale='3'
-              specularConstant='0.8'
-              specularExponent='20'
-              lightingColor='#FFD700'
-              result='specOut'
-            >
-              <fePointLight x='-5000' y='-10000' z='20000' />
-            </feSpecularLighting>
-            <feComposite
-              in='specOut'
-              in2='SourceAlpha'
-              operator='in'
-              result='specOut'
-            />
-            <feComposite
-              in='SourceGraphic'
-              in2='specOut'
-              operator='arithmetic'
-              k1='0'
-              k2='1'
-              k3='1'
-              k4='0'
-              result='litPaint'
-            />
-          </filter>
+            <radialGradient id={segmentFillId.red} cx='50%' cy='50%' r='70%'>
+              <stop offset='0%' stopColor={lightenColor('#c62828', 22)} />
+              <stop offset='55%' stopColor={'#c62828'} />
+              <stop offset='100%' stopColor={darkenColor('#c62828', 18)} />
+            </radialGradient>
 
-          <filter id='metalTexture' x='0%' y='0%' width='100%' height='100%'>
-            <feTurbulence
-              baseFrequency='0.05'
-              numOctaves='2'
-              result='turbulence'
-            />
-            <feColorMatrix
-              in='turbulence'
-              mode='saturate'
-              values='2'
-              result='saturated'
-            />
-            <feBlend
-              in='SourceGraphic'
-              in2='saturated'
-              mode='overlay'
-              opacity='0.1'
-            />
-          </filter>
+            <radialGradient id={segmentFillId.black} cx='50%' cy='50%' r='70%'>
+              <stop offset='0%' stopColor={lightenColor('#111111', 18)} />
+              <stop offset='60%' stopColor={'#111111'} />
+              <stop offset='100%' stopColor={darkenColor('#111111', 25)} />
+            </radialGradient>
 
-          {SECTORS.map((color, i) => {
-            const baseColor = getColor(color, i)
-            return (
-              <radialGradient
-                key={`metal-${i}`}
-                id={`metalGradient-${i}`}
-                cx='50%'
-                cy='50%'
-                r='70%'
-                fx='30%'
-                fy='30%'
-              >
-                <stop offset='0%' stopColor={baseColor} stopOpacity='1'>
-                  <animate
-                    attributeName='stopColor'
-                    values={`${baseColor};${lightenColor(
-                      baseColor,
-                      30
-                    )};${baseColor}`}
-                    dur='4s'
-                    repeatCount='indefinite'
-                  />
-                </stop>
-                <stop
-                  offset='50%'
-                  stopColor={lightenColor(baseColor, 20)}
-                  stopOpacity='0.9'
-                >
-                  <animate
-                    attributeName='stopColor'
-                    values={`${lightenColor(
-                      baseColor,
-                      20
-                    )};${baseColor};${lightenColor(baseColor, 20)}`}
-                    dur='4s'
-                    repeatCount='indefinite'
-                  />
-                </stop>
-                <stop
-                  offset='100%'
-                  stopColor={darkenColor(baseColor, 20)}
-                  stopOpacity='1'
-                >
-                  <animate
-                    attributeName='stopColor'
-                    values={`${darkenColor(
-                      baseColor,
-                      20
-                    )};${baseColor};${darkenColor(baseColor, 20)}`}
-                    dur='4s'
-                    repeatCount='indefinite'
-                  />
-                </stop>
-              </radialGradient>
-            )
-          })}
-        </defs>
+            <radialGradient id={segmentFillId.green} cx='50%' cy='50%' r='70%'>
+              <stop offset='0%' stopColor={lightenColor('#1b8f3a', 22)} />
+              <stop offset='55%' stopColor={'#1b8f3a'} />
+              <stop offset='100%' stopColor={darkenColor('#1b8f3a', 18)} />
+            </radialGradient>
+          </defs>
 
-        <g ref={sectorsRef}>
-          {/* Сегменты с металлическим фоном */}
           {SECTORS.map((value, i) => {
             const t = getTextData(i)
             return (
@@ -265,21 +161,13 @@ export function Wheel ({ onSpinComplete }) {
                 <path
                   d={createSegmentPath(i)}
                   fill={getMetalGradient(value, i)}
-                  filter='url(#metalTexture)'
                 />
                 <text
                   x={t.x}
                   y={t.y}
-                  fill='white'
-                  fontSize='30'
-                  fontWeight='800'
                   textAnchor='start'
                   dominantBaseline='middle'
                   transform={`rotate(${t.angle} ${t.x} ${t.y})`}
-                  style={{
-                    textShadow:
-                      '2px 2px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,215,0,0.3)'
-                  }}
                 >
                   {value}
                 </text>
@@ -306,9 +194,7 @@ export function Wheel ({ onSpinComplete }) {
                   stroke='url(#goldDivider)'
                   strokeWidth='6'
                   strokeLinecap='round'
-                  filter='url(#metalShine)'
                 />
-
                 <line
                   x1={xInner}
                   y1={yInner}
@@ -329,7 +215,6 @@ export function Wheel ({ onSpinComplete }) {
             fill='none'
             stroke='url(#goldDivider)'
             strokeWidth='6'
-            filter='url(#metalShine)'
           />
 
           <circle
@@ -339,41 +224,58 @@ export function Wheel ({ onSpinComplete }) {
             fill='none'
             stroke='url(#goldDivider)'
             strokeWidth='6'
-            filter='url(#metalShine)'
           />
-        </g>
 
-        <image
-          href={InnerRim}
-          x='120'
-          y='120'
-          width='492'
-          height='492'
-          pointerEvents='none'
-        />
-      </svg>
+          <image
+            href={InnerRim}
+            x='120'
+            y='120'
+            width='492'
+            height='492'
+            pointerEvents='none'
+          />
+        </svg>
 
-      <img src={Rim} className={styles.rim} alt='' />
+        <img src={Rim} className={styles.rim} alt='' />
+      </div>
 
       <div
         className={styles.buttonContainer}
         onClick={!hasSpun && !spinning ? handleSpinClick : undefined}
-        style={{
-          pointerEvents: hasSpun ? 'none' : 'auto'
-        }}
+        style={{ pointerEvents: hasSpun ? 'none' : 'auto' }}
       >
         <img src={Button} className={styles.button} alt='' />
       </div>
+
       <img src={Arrow} className={styles.pointer} alt='' />
     </div>
   )
 }
 
-// Вспомогательные функции для работы с цветами
 function lightenColor (color, percent) {
-  return color
+  return shiftColor(color, Math.abs(percent))
 }
 
 function darkenColor (color, percent) {
-  return color
+  return shiftColor(color, -Math.abs(percent))
+}
+
+function shiftColor (hex, percent) {
+  const c = String(hex || '').replace('#', '')
+  if (c.length !== 6) return hex
+
+  const num = parseInt(c, 16)
+  const r = (num >> 16) & 255
+  const g = (num >> 8) & 255
+  const b = num & 255
+
+  const t = percent < 0 ? 0 : 255
+  const p = Math.min(100, Math.max(0, Math.abs(percent))) / 100
+
+  const nr = Math.round((t - r) * p + r)
+  const ng = Math.round((t - g) * p + g)
+  const nb = Math.round((t - b) * p + b)
+
+  const toHex = v => v.toString(16).padStart(2, '0')
+  return `#${toHex(nr)}${toHex(ng)}${toHex(nb)}`
 }
