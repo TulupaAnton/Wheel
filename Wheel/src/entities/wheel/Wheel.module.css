@@ -11,7 +11,6 @@
   margin-bottom: 80px;
 }
 
-/* ================= GLOW ================= */
 .glow {
   position: absolute;
   width: 115%;
@@ -23,7 +22,6 @@
   opacity: 0.9;
 }
 
-/* ================= SEGMENTS ================= */
 .wheel {
   position: absolute;
   width: 100%;
@@ -41,14 +39,13 @@
   position: absolute;
   width: 97%;
   height: 97%;
-  /* NOTE: filters on a rotating SVG are expensive on mobile; we disable them during spin */
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
   transform: translateZ(0);
   will-change: transform;
   backface-visibility: hidden;
-  /* Fix transform origin for SVG in some mobile browsers */
   transform-box: fill-box;
   transform-origin: center;
+  z-index: 10;
 }
 
 .segments text {
@@ -62,19 +59,6 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.segments path {
-  transition: none;
-}
-
-.segments path:hover {
-  filter: none;
-}
-
-/* ================= PERFORMANCE DURING SPIN ================= */
-.spinning {
-  /* Avoid expensive paints/filters while rotating on mobile */
-}
-
 .spinning .segments {
   filter: none !important;
 }
@@ -83,119 +67,145 @@
   text-shadow: none !important;
 }
 
-/* ================= RIM ================= */
+/* ================= BACKLIGHT REFLECTION ================= */
+@keyframes backlightPulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.segments ellipse[fill='url(#backlightReflect)'],
+.segments ellipse[fill*='rgba(255,255,255'] {
+  animation: backlightPulse 3.5s ease-in-out infinite;
+}
+
 .rim {
   position: absolute;
   width: 96.5%;
   height: 96.5%;
   pointer-events: none;
+  z-index: 30;
 }
 
-/* ================= BUTTON ================= */
-.buttonContainer {
+.pegsSvg {
   position: absolute;
-  width: 50%;
-  height: 50%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 40;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* ================= PREMIUM BUTTON  ================= */
+.buttonContainer {
+  position: relative;
+  width: 52%;
+  height: 52%;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  min-width: 60px;
-  min-height: 60px;
-  isolation: isolate;
+  z-index: 100;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
 }
 
-.buttonContainer:active {
-  transform: scale(0.95);
+.buttonDimmed {
+  cursor: default;
 }
 
-.button {
+.buttonGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 105%;
+  height: 105%;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: 0 0 28px 8px rgba(255, 120, 20, 0.55),
+    0 0 55px 18px rgba(255, 60, 0, 0.3), 0 0 90px 35px rgba(255, 30, 0, 0.12);
+  animation: buttonGlowPulse 2.2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.buttonDimmed .buttonGlow {
+  opacity: 0.2;
+  animation: none;
+}
+
+@keyframes buttonGlowPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 28px 8px rgba(255, 120, 20, 0.55),
+      0 0 55px 18px rgba(255, 60, 0, 0.3), 0 0 90px 35px rgba(255, 30, 0, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 38px 14px rgba(255, 140, 20, 0.75),
+      0 0 70px 26px rgba(255, 80, 0, 0.45), 0 0 110px 50px rgba(255, 40, 0, 0.2);
+  }
+}
+
+.buttonBg {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  position: relative;
+
+  transition: filter 0.4s ease;
+}
+
+.buttonRim {
+  position: absolute;
+  width: 101.5%;
+  height: 101.5%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 1;
+
+  transition: filter 0.4s ease;
+}
+
+.buttonForeground {
+  position: absolute;
+  width: 130%;
+  height: 130%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 2;
 }
 
-/* ================= FIRE EFFECT ================= */
-/* Premium lightweight flame: 2 pseudo-elements, only transform/opacity animated */
-.buttonContainer::before,
-.buttonContainer::after {
-  content: '';
+.buttonContainer:active .buttonForeground {
+  transform: scale(0.91) rotate(-7deg);
+}
+
+/* ================= SPIN LABEL ================= */
+.buttonLabel {
   position: absolute;
-  inset: -10%;
-  border-radius: 50%;
+  z-index: 5;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(80px, 2vw, 80px);
+  color: #fff;
   pointer-events: none;
-  opacity: 0.85;
-  transform: translateZ(0);
-  will-change: transform, opacity;
-  z-index: 1;
+  user-select: none;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.buttonContainer::before {
-  background: radial-gradient(
-      circle at 50% 75%,
-      rgba(255, 215, 0, 0.95) 0%,
-      rgba(255, 140, 0, 0.75) 22%,
-      rgba(255, 69, 0, 0.45) 40%,
-      rgba(255, 69, 0, 0) 60%
-    ),
-    radial-gradient(
-      circle at 35% 55%,
-      rgba(255, 255, 255, 0.55) 0%,
-      rgba(255, 255, 255, 0) 35%
-    );
-  filter: blur(2px);
-  animation: flamePulse 1.2s ease-in-out infinite;
+.buttonContainer:active .buttonLabel {
+  transform: scale(0.91);
 }
 
-.buttonContainer::after {
-  background: radial-gradient(
-    circle at 55% 80%,
-    rgba(255, 174, 0, 0.85) 0%,
-    rgba(255, 106, 0, 0.6) 25%,
-    rgba(255, 69, 0, 0.25) 45%,
-    rgba(255, 69, 0, 0) 62%
-  );
-  filter: blur(4px);
-  mix-blend-mode: screen;
-  animation: flameWobble 1.55s ease-in-out infinite;
-}
-
-@keyframes flamePulse {
-  0% {
-    transform: scale(0.96) translateY(2px);
-    opacity: 0.75;
-  }
-  50% {
-    transform: scale(1.04) translateY(-2px);
-    opacity: 0.95;
-  }
-  100% {
-    transform: scale(0.97) translateY(1px);
-    opacity: 0.8;
-  }
-}
-
-@keyframes flameWobble {
-  0% {
-    transform: rotate(-2deg) scale(0.98);
-    opacity: 0.7;
-  }
-  50% {
-    transform: rotate(2deg) scale(1.03);
-    opacity: 0.95;
-  }
-  100% {
-    transform: rotate(-1deg) scale(0.99);
-    opacity: 0.78;
-  }
-}
-
-@media (max-width: 480px) {
-  .buttonContainer::after {
-    filter: blur(3px);
-  }
+.buttonDimmed .buttonLabel {
+  opacity: 0.35;
 }
 
 /* ================= POINTER ================= */
@@ -207,28 +217,39 @@
   transform: translateX(-50%);
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
   z-index: 300;
+  transform-origin: 50% 14%;
+  will-change: transform;
 }
 
-/* ================= ANIMATIONS ================= */
-/* NOTE: Removed continuous shimmer animation for mobile FPS */
-
-/* ================= MOBILE С КРУПНЫМИ ЦИФРАМИ ================= */
-
+/* ================= MOBILE ================= */
 @media (max-width: 760px) {
   .wrapper {
     width: 95vw;
     transform: translateY(40px);
   }
-
   .segments text {
     font-size: clamp(24px, 6vw, 3.5rem) !important;
     stroke-width: 1.5px;
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
   }
-
   .segments {
     width: 96%;
     height: 96%;
+  }
+  .pointer {
+    width: 38%;
+    top: -8%;
+  }
+  .buttonContainer {
+    width: 45%;
+    height: 45%;
+  }
+  .buttonRim {
+    width: 100%;
+    height: 100%;
+  }
+  .buttonForeground {
+    width: 130%;
+    height: 130%;
   }
 }
 
@@ -236,12 +257,10 @@
   .glow {
     filter: blur(14px);
   }
-
   .segments text {
     font-size: clamp(26px, 7vw, 3rem) !important;
     stroke-width: 2px;
   }
-
   .pointer {
     width: 38%;
     top: -8%;
@@ -251,66 +270,29 @@
 @media (max-width: 480px) {
   .wrapper {
     width: 98vw;
-    transform: translateY(15px);
+    transform: translateY(80px);
   }
-
-  /* МАКСИМАЛЬНО КРУПНЫЕ ЦИФРЫ */
   .segments text {
     font-size: clamp(28px, 8vw, 3.2rem) !important;
     stroke-width: 2.5px;
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
-    font-weight: bold;
-    paint-order: stroke fill;
-    fill: #ffffff;
-    stroke: #000000;
-    letter-spacing: 1px;
   }
-
-  .pointer {
-    width: 38%;
-    top: -8%;
-  }
-
-  .buttonContainer {
-    width: 55%;
-    height: 55%;
-    min-width: 50px;
-    min-height: 50px;
-  }
-
   .segments {
     width: 95%;
     height: 95%;
   }
-
-  .segments path {
-    stroke-width: 2px;
-    stroke: rgba(255, 255, 255, 0.3);
+  .buttonContainer {
+    width: 45%;
+    height: 45%;
   }
-}
-
-@media (max-width: 375px) {
-  .segments text {
-    font-size: clamp(26px, 9vw, 2.8rem) !important;
-    stroke-width: 3px;
+  .buttonRim {
+    width: 100%;
+    height: 100%;
   }
-}
-
-@media (max-width: 320px) {
-  .segments text {
-    font-size: 24px !important;
-    stroke-width: 3px;
+  .buttonForeground {
+    width: 130%;
+    height: 130%;
   }
-
-  .segments {
-    width: 94%;
-    height: 94%;
-  }
-}
-
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .segments text {
-    stroke-width: 2px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  .buttonLabel {
+    font-size: clamp(50px, 2vw, 50px);
   }
 }

@@ -42,19 +42,59 @@ body::-webkit-scrollbar {
 .burgerBtn {
   display: none;
   flex-direction: column;
-  gap: 5px;
-  background: none;
-  border: none;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  width: 46px;
+  height: 46px;
+  background: rgba(217, 178, 109, 0.08);
+  border: 1px solid rgba(217, 178, 109, 0.35);
+  border-radius: 12px;
   cursor: pointer;
-  z-index: 1001;
+  z-index: 99999;
+  position: relative;
+  transition: background 0.3s, border-color 0.3s;
+  backdrop-filter: blur(8px);
 }
 
-.burgerBtn span {
-  width: 30px;
-  height: 3px;
-  background: #d9b26d;
+.burgerBtn:hover {
+  background: rgba(217, 178, 109, 0.18);
+  border-color: rgba(217, 178, 109, 0.7);
+}
+
+.burgerLine {
   display: block;
-  transition: 0.3s;
+  width: 22px;
+  height: 2px;
+  background: linear-gradient(90deg, #d9b26d, #f9e99c);
+  border-radius: 2px;
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.25s ease,
+    top 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  position: absolute;
+}
+
+.burgerLine:nth-child(1) {
+  top: 14px;
+}
+.burgerLine:nth-child(2) {
+  top: 22px;
+}
+.burgerLine:nth-child(3) {
+  top: 30px;
+}
+
+/* Active state — X morph */
+.burgerBtnActive .burgerLine:nth-child(1) {
+  top: 22px;
+  transform: rotate(45deg);
+}
+.burgerBtnActive .burgerLine:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.burgerBtnActive .burgerLine:nth-child(3) {
+  top: 22px;
+  transform: rotate(-45deg);
 }
 
 .navMenu {
@@ -93,30 +133,6 @@ body::-webkit-scrollbar {
   justify-content: space-between;
   align-items: center;
 }
-/* === BURGER MENU === */
-.burgerBtn {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  z-index: 1001;
-}
-
-.burgerBtn span {
-  display: block;
-  width: 30px;
-  height: 3px;
-  background: #d9b26d;
-  transition: 0.3s;
-}
-
-.navMenu {
-  /* display: flex; */
-  gap: 20px;
-}
-
 /* === SECTION TEXT WITH BORDER === */
 .sectionP {
   display: flex;
@@ -350,18 +366,17 @@ body::-webkit-scrollbar {
     z-index: 1;
   }
 }
+
 /* === MOBILE ADAPTATION === */
 @media (max-width: 760px) {
-  /* базовая сцена */
   .page {
     min-height: 100vh;
     overflow-x: hidden;
   }
 
-  /* верхняя шапка */
   .wrapper {
     max-width: 100%;
-    padding: 14px 16px 0; /* компактно как на скрине */
+    padding: 14px 16px 0;
   }
 
   .header {
@@ -369,34 +384,36 @@ body::-webkit-scrollbar {
   }
 
   .header img {
-    height: 42px; /* подгони если нужно */
+    height: 42px;
     width: auto;
   }
 
   .burgerBtn {
-    display: flex; /* бургер видим */
+    display: flex;
   }
 
-  /* десктопные кнопки скрываем */
-  .BtnwrapperDesktop {
+  .Btnwrapper {
     display: none;
   }
 
-  /* меню */
+  /* === MOBILE NAV MENU === */
   .navMenu {
+    display: flex;
     position: fixed;
     top: 0;
     right: -100%;
     width: 260px;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.92);
-    display: flex;
+    height: 30vh;
+    border-radius: 5%;
+    background: rgba(0, 0, 0, 0.96);
     flex-direction: column;
     gap: 18px;
     padding: 18px;
-    transition: 0.35s;
-    z-index: 9999;
-    border-left: 1px solid #d9b26d;
+    transition: right 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 99999;
+    border-left: 1px solid rgba(217, 178, 109, 0.4);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
   }
 
   .navMenuActive {
@@ -420,66 +437,92 @@ body::-webkit-scrollbar {
     margin-top: 10px;
   }
 
+  /* === MOBILE TEXT SECTION === */
   .sectionP {
-    width: calc(100% - 24px);
-    max-width: 520px;
-    margin: 14px auto 0;
-    padding: clamp(12px, 4vw, 16px) clamp(10px, 3.5vw, 14px);
-    border-radius: clamp(20px, 5vw, 26px);
+    width: calc(100% - 32px);
+    max-width: 480px;
+    margin: 20px auto 0;
+    padding: 20px 18px 22px;
+    border-radius: 22px;
     text-align: center;
     position: relative;
-    z-index: 1;
+    z-index: 5;
+
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.65) 0%,
+      rgba(20, 10, 0, 0.75) 100%
+    );
+    border: 1px solid rgba(217, 178, 109, 0.45);
+    box-shadow: 0 0 30px rgba(217, 178, 109, 0.12),
+      0 4px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(249, 233, 156, 0.15);
+    backdrop-filter: blur(10px);
   }
 
   .sectionP::before {
+    display: none;
+  }
+
+  .sectionP::after {
     content: '';
     position: absolute;
-    inset: 0;
-    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-      url('../shared/assets/images/border.png') no-repeat center;
-    background-size: 100% 100%; /* ✅ фон растягивается пропорционально блоку */
-    border-radius: inherit; /* ✅ наследует радиус родителя */
-    z-index: -1;
-    pointer-events: none;
-    filter: drop-shadow(0 0 18px rgba(255, 200, 80, 0.35));
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #f9e99c, transparent);
+    border-radius: 1px;
   }
 
   .title1 {
-    font-size: clamp(12px, 3.5vw, 14px); /* ✅ адаптивный размер */
-    line-height: 1.15;
-    margin: 0 0 clamp(4px, 1.5vw, 6px);
-    letter-spacing: 0.04em;
+    font-size: clamp(13px, 3.8vw, 16px);
+    font-weight: 400;
+    line-height: 1.2;
+    margin: 0 0 6px;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.92);
     position: relative;
     z-index: 1;
   }
+
   .titleSpan {
-    font-size: 14px;
+    font-size: clamp(13px, 3.8vw, 16px);
     font-weight: 700;
+    color: #f9e99c;
+    text-shadow: 0 0 20px rgba(249, 233, 156, 0.4);
   }
 
   .title2 {
-    font-size: 18px;
+    font-size: clamp(18px, 5.5vw, 24px);
+    font-weight: 700;
     line-height: 1.15;
     margin: 0;
     text-transform: uppercase;
+    color: #f4de8f;
+    text-shadow: 0 0 25px rgba(244, 222, 143, 0.35);
   }
 
   .queen,
   .chip {
     display: none;
   }
+
+  .king {
+    display: none;
+  }
+
   .ace {
-    top: 0;
     top: 85%;
-    width: 220px;
+    width: 200px;
   }
 
   .chip2 {
-    width: 170px;
+    width: 160px;
     top: 78%;
     right: 2%;
-    opacity: 0.95;
+    opacity: 0.9;
   }
 
   .decorLight {
@@ -488,7 +531,6 @@ body::-webkit-scrollbar {
     z-index: 1;
   }
 
-  /* скрываем боковые лишние, оставляем верх/акценты */
   .Light1,
   .Light2,
   .Light3,
@@ -520,50 +562,8 @@ body::-webkit-scrollbar {
     max-width: 420px;
     opacity: 0.45;
   }
-  .Btnwrapper {
-    display: none; /* прячем десктопные кнопки */
-  }
-
-  .burgerBtn {
-    display: flex;
-  }
-
-  .navMenu {
-    display: flex;
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 260px;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.92);
-    flex-direction: column;
-    gap: 18px;
-    padding: 18px;
-    transition: 0.35s;
-    z-index: 9999;
-    border-left: 1px solid #d9b26d;
-  }
-
-  .navMenuActive {
-    right: 0;
-  }
-
-  .menuClose {
-    align-self: flex-end;
-    font-size: 34px;
-    line-height: 1;
-    background: transparent;
-    border: none;
-    color: #d9b26d;
-    cursor: pointer;
-  }
-
-  .mobileButtons {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
 }
+
 @media (max-width: 768px) {
   .king,
   .queen,

@@ -41,15 +41,17 @@ export function Home () {
             <img src={logo} alt='Logo' />
 
             <button
-              className={styles.burgerBtn}
+              className={`${styles.burgerBtn} ${
+                isMenuOpen ? styles.burgerBtnActive : ''
+              }`}
               type='button'
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
               onClick={() => setIsMenuOpen(v => !v)}
             >
-              <span />
-              <span />
-              <span />
+              <span className={styles.burgerLine} />
+              <span className={styles.burgerLine} />
+              <span className={styles.burgerLine} />
             </button>
 
             <nav

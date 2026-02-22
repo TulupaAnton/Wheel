@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>GSAP Energy Ring</title>
+    <style>
+      :root {
+        --bg: #05060a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: radial-gradient(
+          1200px 800px at 50% 45%,
+          #0b1022 0%,
+          var(--bg) 55%,
+          #000 100%
+        );
+        overflow: hidden;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+      }
+
+      .wrap {
+        height: 100%;
+        display: grid;
+        place-items: center;
+      }
+
+      canvas {
+        width: min(78vmin, 560px);
+        height: min(78vmin, 560px);
+        display: block;
+        filter: saturate(1.15) contrast(1.05);
+        /* важно: не ставь will-change на canvas бесконечно, это иногда вредит */
+      }
+
+      .hint {
+        position: fixed;
+        left: 16px;
+        bottom: 16px;
+        font-size: 12px;
+        color: rgba(220, 230, 255, 0.65);
+        user-select: none;
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <canvas id="c"></canvas>
+    </div>
+    <div class="hint">
+      Canvas + GSAP ticker • 60 FPS-friendly<br />
+      Клик — лёгкий “импульс”
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      ;(() => {
+        const canvas = document.getElementById('c')
+        const ctx = canvas.getContext('2d', {
+          alpha: true,
+          desynchronized: true
+        })
+
+        // ====== HiDPI resize ======
+        function resize() {
+          const rect = canvas.getBoundingClientRect()
+          const dpr = Math.min(window.devicePixelRatio || 1, 2) // ограничение dpr = меньше лагов
+          canvas.width = Math.floor(rect.width * dpr)
+          canvas.height = Math.floor(rect.height * dpr)
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+        }
+        window.addEventListener('resize', resize, { passive: true })
+        resize()
+
+        // ====== Offscreen noise texture ======
+        const noiseCanvas = document.createElement('canvas')
+        const noiseCtx = noiseCanvas.getContext('2d', { alpha: true })
+        function buildNoiseTexture(size = 256) {
+          noiseCanvas.width = size
+          noiseCanvas.height = size
+          const img = noiseCtx.createImageData(size, size)
+          const data = img.data
+          for (let i = 0; i < data.length; i += 4) {
+            const v = (Math.random() * 255) | 0
+            data[i] = v
+            data[i + 1] = v
+            data[i + 2] = v
+            data[i + 3] = 255
+          }
+          noiseCtx.putImageData(img, 0, 0)
+        }
+        buildNoiseTexture(256)
+
+        // ====== Animation state (GSAP will drive these) ======
+        const s = {
+          t: 0,
+          rot: 0, // rotation of highlight
+          pulse: 0, // thickness/glow pulse
+          haze: 0.45, // outer haze intensity
+          grain: 0.22, // grain intensity
+          kick: 0 // click impulse
+        }
+
+        // ====== Draw ring frame ======
+        function draw() {
+          const rect = canvas.getBoundingClientRect()
+          const w = rect.width
+          const h = rect.height
+          const cx = w / 2
+          const cy = h / 2
+
+          ctx.clearRect(0, 0, w, h)
+
+          // Base radii
+          const R = Math.min(w, h) * 0.28
+          const lineW = Math.max(
+            10,
+            Math.min(w, h) *
+              (0.04 +
+                0.01 * (0.5 + 0.5 * Math.sin(s.t * 2.0)) +
+                s.pulse * 0.015)
+          )
+          const glow = Math.min(w, h) * (0.06 + s.pulse * 0.02 + s.kick * 0.03)
+
+          // 1) Soft outer haze "cloud"
+          ctx.save()
+          ctx.translate(cx, cy)
+          ctx.rotate(s.rot * 0.15)
+
+          ctx.globalCompositeOperation = 'lighter'
+          ctx.globalAlpha = 0.35 * (0.7 + s.haze) + s.kick * 0.15
+
+          // Draw few blurred rings as haze
+          for (let i = 0; i < 4; i++) {
+            const rr = R + lineW * 0.75 + i * 6
+            ctx.beginPath()
+            ctx.arc(0, 0, rr, 0, Math.PI * 2)
+            ctx.strokeStyle = `rgba(40, 120, 255, ${0.08 - i * 0.012})`
+            ctx.lineWidth = lineW + i * 8
+            ctx.shadowColor = 'rgba(60, 160, 255, 0.55)'
+            ctx.shadowBlur = glow * (0.9 + i * 0.15)
+            ctx.stroke()
+          }
+          ctx.restore()
+
+          // 2) Main ring with conic highlight
+          ctx.save()
+          ctx.translate(cx, cy)
+
+          // Conic gradient highlight (modern browsers)
+          const g = ctx.createConicGradient(s.rot, 0, 0)
+          g.addColorStop(0.0, 'rgba(120,200,255,0.00)')
+          g.addColorStop(0.06, 'rgba(120,200,255,0.20)')
+          g.addColorStop(0.12, 'rgba(120,200,255,0.85)')
+          g.addColorStop(0.18, 'rgba(120,200,255,0.18)')
+          g.addColorStop(0.35, 'rgba(80,140,255,0.08)')
+          g.addColorStop(0.6, 'rgba(50,90,220,0.05)')
+          g.addColorStop(1.0, 'rgba(120,200,255,0.00)')
+
+          ctx.lineCap = 'round'
+          ctx.lineJoin = 'round'
+
+          // Base ring glow
+          ctx.globalCompositeOperation = 'lighter'
+          ctx.shadowColor = 'rgba(90,170,255,0.75)'
+          ctx.shadowBlur = glow
+
+          // Draw ring stroke
+          ctx.beginPath()
+          ctx.arc(0, 0, R, 0, Math.PI * 2)
+          ctx.strokeStyle = g
+          ctx.lineWidth = lineW
+          ctx.stroke()
+
+          // Inner faint ring (adds depth)
+          ctx.shadowBlur = glow * 0.55
+          ctx.beginPath()
+          ctx.arc(0, 0, R - lineW * 0.35, 0, Math.PI * 2)
+          ctx.strokeStyle = 'rgba(80,140,255,0.12)'
+          ctx.lineWidth = Math.max(2, lineW * 0.22)
+          ctx.stroke()
+
+          // Outer crisp edge (thin)
+          ctx.shadowBlur = glow * 0.2
+          ctx.beginPath()
+          ctx.arc(0, 0, R + lineW * 0.35, 0, Math.PI * 2)
+          ctx.strokeStyle = 'rgba(190,230,255,0.18)'
+          ctx.lineWidth = Math.max(1, lineW * 0.1)
+          ctx.stroke()
+
+          ctx.restore()
+
+          // 3) Grain / noise overlay (masked-ish by ring area)
+          // Быстро и “дешево”: кладём шум поверх и делаем его очень прозрачным
+          ctx.save()
+          ctx.globalCompositeOperation = 'overlay'
+          ctx.globalAlpha = s.grain + s.kick * 0.08
+
+          const nx = (Math.sin(s.t * 1.7) * 0.5 + 0.5) * 40
+          const ny = (Math.cos(s.t * 1.3) * 0.5 + 0.5) * 40
+
+          // tile noise
+          const pattern = ctx.createPattern(noiseCanvas, 'repeat')
+          ctx.fillStyle = pattern
+          ctx.translate(-nx, -ny)
+          ctx.fillRect(
+            0,
+            0,
+            canvas.getBoundingClientRect().width + 80,
+            canvas.getBoundingClientRect().height + 80
+          )
+          ctx.restore()
+
+          // 4) Slight vignette to push focus
+          ctx.save()
+          const vg = ctx.createRadialGradient(
+            canvas.getBoundingClientRect().width / 2,
+            canvas.getBoundingClientRect().height / 2,
+            Math.min(
+              canvas.getBoundingClientRect().width,
+              canvas.getBoundingClientRect().height
+            ) * 0.12,
+            canvas.getBoundingClientRect().width / 2,
+            canvas.getBoundingClientRect().height / 2,
+            Math.min(
+              canvas.getBoundingClientRect().width,
+              canvas.getBoundingClientRect().height
+            ) * 0.52
+          )
+          vg.addColorStop(0, 'rgba(0,0,0,0)')
+          vg.addColorStop(1, 'rgba(0,0,0,0.55)')
+          ctx.globalCompositeOperation = 'multiply'
+          ctx.fillStyle = vg
+          ctx.fillRect(
+            0,
+            0,
+            canvas.getBoundingClientRect().width,
+            canvas.getBoundingClientRect().height
+          )
+          ctx.restore()
+        }
+
+        // ====== GSAP animation ======
+        // Бесконечное вращение + микро-пульс
+        const base = gsap.timeline({ repeat: -1 })
+        base.to(
+          s,
+          {
+            rot: Math.PI * 2,
+            duration: 3.8,
+            ease: 'none'
+          },
+          0
+        )
+
+        base.to(
+          s,
+          {
+            pulse: 1,
+            duration: 1.6,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1
+          },
+          0
+        )
+
+        // Доп. “жизнь” дымки
+        base.to(
+          s,
+          {
+            haze: 0.75,
+            duration: 2.4,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1
+          },
+          0
+        )
+
+        // Тикер GSAP (один луп, без лишних RAF)
+        gsap.ticker.fps(60)
+        gsap.ticker.add(() => {
+          s.t += gsap.ticker.deltaRatio() / 60
+          // импульс сам затухает
+          s.kick *= 0.92
+          if (s.kick < 0.001) s.kick = 0
+          draw()
+        })
+
+        // Клик = небольшой импульс “энергии”
+        window.addEventListener(
+          'pointerdown',
+          () => {
+            s.kick = Math.min(1, s.kick + 0.65)
+            gsap.fromTo(
+              s,
+              { grain: 0.18 },
+              {
+                grain: 0.28,
+                duration: 0.12,
+                yoyo: true,
+                repeat: 1,
+                ease: 'power2.out'
+              }
+            )
+          },
+          { passive: true }
+        )
+      })()
+    </script>
+  </body>
+</html>

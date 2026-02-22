@@ -9,7 +9,11 @@ export const getTargetRotation = (
 
   const desiredEndRotation = -winnerCenterAngle
 
-  const fullSpins = 5 + Math.floor(Math.random() * 3)
+  // Уменьшаем количество оборотов для мобильных устройств
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+  const minSpins = isMobile ? 4 : 5
+  const maxSpins = isMobile ? 6 : 7
+  const fullSpins = minSpins + Math.floor(Math.random() * (maxSpins - minSpins))
 
   const norm = (((desiredEndRotation - currentRotation) % 360) + 360) % 360
   const targetRotation = currentRotation + fullSpins * 360 + norm
